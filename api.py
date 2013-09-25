@@ -1,7 +1,7 @@
 from mechanize import Browser
 import webbrowser
 import sys
-from parser import parse_dominios, parse_tramites, parse_alertas
+from BeautifulSoup import BeautifulSoup as bs
 
 def guardar(html):
     name = 'index.html'
@@ -10,6 +10,10 @@ def guardar(html):
     f.close()
     webbrowser.open(name)
 
+
+class ItemsNic(object):
+    def __init__(self, res):
+        pass
 
 class Pycnic(object):
     def __init__(self, user,pwd):
@@ -27,6 +31,7 @@ class Pycnic(object):
         self.br.select_form(name="loginForm")
         self.br['loginForm:usuario'] = user
         self.br['loginForm:password'] = pwd
+        print self.br
         self.br.form.controls.remove(self.br.form.controls[-2])
         res = self.br.submit()
         self.dominios = parse_dominios(res.read())
@@ -55,3 +60,67 @@ class Pycnic(object):
             self.alertas = parse_alertas(res.read())
             return self.alertas
 
+
+
+class Dominio(object):
+    def __init__(self, dom):
+        self.id = dom['id']
+        self.url = dom['dominio']
+        self.creado = dom['creado']
+        self.vencimiento = dom['vencimiento']
+        self.estado = dom['estado']
+        self.mensajes = dom['mensajes']
+
+    def delegar(self, dns=[None]):
+        pass
+
+def parse_dominios(html):
+    soup = bs(html)
+    vacio = soup.find('tr', {'class': 'ui-widget-content ui-datatable-empty-message'})
+    if vacio:
+        return 'No se encontraron datos'
+    table = soup.find('tbody', {'id': 'misDominiosForm:tabla_data'})
+    trs = table.findAll('tr')
+    dominios = []
+    for tr in trs:
+        tds = tr.findAll('td',{'role': 'gridcell'})
+        dom = {}
+        dom['id'] = tr['data-ri']
+        dom['dominio'] = tds[1].div.string
+        dom['creado'] = tds[2].div.string
+        dom['vencimiento'] = tds[3].div.string
+        dom['estado'] = tds[4].div.string
+        dom['mensajes'] = tds[5].div.string
+        dominios.append(Dominio(dom))
+    return dominios
+
+def parse_tramites(html):
+    soup = bs(html)
+    table = soup.find('tbody', {'id': 'misTramitesForm:tabla_data'})
+    trs = table.findAll('tr')
+    tramites = []
+    for tr in trs:
+        tds = tr.findAll('td',{'role': 'gridcell'})
+        tra = {}
+        tra['id'] = tds[1].div.string
+        tra['tramite'] = tds[2].div.string
+        tra['comienzo'] = tds[3].div.string
+        tra['fin'] = tds[4].div.string
+        tra['estado'] = tds[5].div.string
+        tra['dominio'] = tds[6].div.string
+        tramites.append(tra)
+    return tramites
+
+def parse_alertas(html):
+    soup = bs(html)
+    table = soup.find('tbody', {'id': 'alertasForm:tabla_data'})
+    trs = table.findAll('tr')
+    alertas= []
+    for tr in trs:
+        tds = tr.findAll('td',{'role': 'gridcell'})
+        ale = {}
+        ale['fecha'] = tds[1].div.string
+        ale['tramite'] = tds[2].div.string
+        ale['estado'] = tds[3].div.string
+        alertas.append(ale)
+    return alertas
