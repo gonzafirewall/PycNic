@@ -11,12 +11,17 @@ Example
 from api import Pycnic
 
 print 'Logueando'
-p = Pycnic("gonzafirewall", "Laformuladed10s")
+p = Pycnic("test", "testingpass")
 
 print '--- dominios --- '
 for dominio in p.obtener_dominios():
     print dominio.url, dominio.estado
 `````
 
+output
 
+Logueando
+--- dominios --- 
+midominio.com.ar Registrado
+eldominioloco.com.ar Registrado
 
