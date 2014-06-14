@@ -31,7 +31,6 @@ class Pycnic(object):
         self.br.select_form(name="loginForm")
         self.br['loginForm:usuario'] = user
         self.br['loginForm:password'] = pwd
-        print self.br
         self.br.form.controls.remove(self.br.form.controls[-2])
         res = self.br.submit()
         self.dominios = parse_dominios(res.read())
@@ -113,14 +112,14 @@ def parse_tramites(html):
 
 def parse_alertas(html):
     soup = bs(html)
-    table = soup.find('tbody', {'id': 'alertasForm:tabla_data'})
+    table = soup.find('tbody', {'id': 'tabla_data'})
     trs = table.findAll('tr')
     alertas= []
     for tr in trs:
         tds = tr.findAll('td',{'role': 'gridcell'})
         ale = {}
-        ale['fecha'] = tds[1].div.string
-        ale['tramite'] = tds[2].div.string
-        ale['estado'] = tds[3].div.string
+        ale['fecha'] = tds[1].div.span.string
+        ale['tramite'] = tds[2].div.span.string
+        ale['estado'] = tds[3].div.span.string
         alertas.append(ale)
     return alertas
